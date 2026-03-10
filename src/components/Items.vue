@@ -3,66 +3,66 @@
 
 <template>
   <h2>Список товаров:</h2>
-  <div class="table-responsive">
-    <table>
-      <thead class="table-light">
-      <tr>
-        <th scope="col" class="text-center">ID</th>
-        <th scope="col">Наименование</th>
-        <th scope="col">Цена</th>
-        <th scope="col">Количество</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr v-for="item in items" :key="item.id">
-        <td class="text-center fw-bold">{{ item.id }}</td>
-        <td>{{ item.name }}</td>
-        <td>{{ item.price }}</td>
-        <td>{{ item.balance }}</td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
-  <p v-if="error" class="error">{{ error }}</p>
+  <DataTable
+    :value="items"
+    :loading="dataStore.loading"
+    :paginator="true"
+    :lazy="true"
+    :rows="perpage"
+    :rowsPerPageOptions="[2, 5, 10]"
+    :totalRecords="items_total"
+    @page="onPageChange"
+    responsive-layout="scroll"
+    :first="offset"
+  >
+    <Column field="id" header="№"/>
+    <Column field="name" header="Наименование товара"/>
+    <Column field="category.name" header="Категория"/>
+    <Column field="price" header="Цена"/>
+  </DataTable>
 </template>
 
 <script>
-import { useItemStore } from '@/stores/itemStore';
-
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
+import {useDataStore} from "@/stores/dataStore";
 export default {
-  name: 'Items',
-  data() {
-    return {
-      itemStore: useItemStore(),
-    };
+  name: "Items",
+  components: {DataTable, Column},
+  data(){
+    return{
+      dataStore:useDataStore(),
+      perpage: 5,
+      offset: 0,
+    }
   },
-  computed: {
-    items() {
-      return this.itemStore.items;
+  computed:{
+    items(){
+      return this.dataStore.data.items;
     },
-    error() {
-      return this.itemStore.errorMessage;
-    },
+    items_total(){
+      return this.dataStore.totals.items_total;
+    }
+  },
+  mounted(){
+    console.log('Items mounted');
+    this.dataStore.get('items','/api/item');
+    this.dataStore.get_total('items_total','/api/item_total');
+    console.log('Items=', this.items, this.items_total);
   },
   methods: {
-    fetchItems() {
-      this.itemStore.fetchItems();
-    },
-  },
-  mounted() {
-    this.fetchItems();
-  },
-};
+    onPageChange(event) {
+      this.offset = event.first;
+      this.perpage = event.rows;
+      this.dataStore.get('items','/api/item',this.offset/this.perpage, this.perpage);
+    }
+  }
+}
 </script>
 
 <style scoped>
 .items {
   padding: 20px;
 }
-.error {
-  color: red;
-}
-td{
-  padding: 10px;
-}
 </style>
+

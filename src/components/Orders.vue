@@ -1,73 +1,75 @@
-<script setup></script>
+<script setup>
+</script>
 
 <template>
   <h2>Список заказов:</h2>
-  <div class="table-responsive">
-    <table class="table table-striped table-bordered">
-      <thead class="table-light">
-        <tr>
-          <th scope="col" class="text-center">ID</th>
-          <th scope="col">Начало</th>
-          <th scope="col">Конец</th>
-          <th scope="col">Состав заказа</th>
-          <th scope="col">Итоговая стоимость</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="order in orders" :key="order.id">
-          <td> {{ order.id }} </td>
-          <td> {{ order.time_start }} </td>
-          <td> {{ order.time_end }} </td>
-          <td>
-            <div v-for="item in order.items" :key="item.id">
-              {{ item.name }} {{ item.pivot.amount }} шт.
-            </div>
-          </td>
-          <td>{{ order.total_price }}₽</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <p v-if="error" class="error">{{ error }}</p>
+  <DataTable
+    :value="orders"
+    :loading="dataStore.loading"
+    :paginator="true"
+    :lazy="true"
+    :rows="perpage"
+    :rowsPerPageOptions="[2, 5, 10]"
+    :totalRecords="orders_total"
+    @page="onPageChange"
+    responsive-layout="scroll"
+    :first="offset"
+  >
+    <Column field="id" header="№"/>
+    <Column header="Состав заказа">
+      <template #body="slotProps">
+        <div v-for="item in slotProps.data.items" :key="item.id">
+          {{ item.name }} {{ item.pivot.amount }} шт.
+        </div>
+      </template>
+    </Column>
+    <Column field="total_price" header="Итоговая стоимость"/>
+    <Column field="time_start" header="Время начала"/>
+    <Column field="time_end" header="Время окончания"/>
+  </DataTable>
 </template>
 
 <script>
-import { useOrderStore } from '@/stores/orderStore';
-
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
+import {useDataStore} from "@/stores/dataStore";
 export default {
-  name: 'Orders',
-  data() {
-    return {
-      orderStore: useOrderStore(),
-    };
+  name: "Orders",
+  components: {DataTable, Column},
+  data(){
+    return{
+      dataStore:useDataStore(),
+      perpage: 5,
+      offset: 0,
+    }
   },
-  computed: {
-    orders() {
-      return this.orderStore.orders;
+  computed:{
+    orders(){
+      return this.dataStore.data.orders;
     },
-    error() {
-      return this.orderStore.errorMessage;
-    },
+    orders_total(){
+      return this.dataStore.totals.orders_total;
+    }
+  },
+  mounted(){
+    console.log('Orders mounted');
+    this.dataStore.get_auth('orders','/api/order');
+    this.dataStore.get_total_auth('orders_total','/api/order_total');
+    console.log('Orders=', this.orders, this.orders_total);
   },
   methods: {
-    fetchOrders() {
-      this.orderStore.fetchOrders();
-    },
-  },
-  mounted() {
-    this.fetchOrders();
-  },
-};
+    onPageChange(event) {
+      this.offset = event.first;
+      this.perpage = event.rows;
+      this.dataStore.get_auth('orders','/api/order',this.offset/this.perpage, this.perpage);
+    }
+  }
+}
 </script>
 
 <style scoped>
-.orders {
+.categories {
   padding: 20px;
 }
-.error {
-  color: red;
-}
-td{
-  padding: 10px;
-}
 </style>
+

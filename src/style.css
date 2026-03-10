@@ -3,7 +3,10 @@ body{
   padding: 20px;
   margin: 0 auto;
 }
-
+.p-paginator-page.p-paginator-page-selected {
+  background: #f4d911 !important;
+  color: #fff !important;
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
