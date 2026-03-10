@@ -7,7 +7,7 @@
         <img src="@/assets/logo.png" width="50" alt="logo" />
       </span>
     </template>
-    <template #item="{ item, props, hasSubmenu, root }">
+    <template #item="{ item }">
       <a class="flex items-center m-2 p-4">
         <router-link v-if="item.route" :to="item.route">
           <span :class="item.icon"/>
