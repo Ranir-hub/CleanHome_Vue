@@ -1,52 +1,80 @@
 <script setup></script>
 
 <template>
-  <div class="app-layout">
-    <header>
-      <nav>
-        <ul class="nav-list">
-          <li><router-link to="/">Главная</router-link></li>
-          <li><router-link to="/categories">Категории</router-link></li>
-          <li><router-link to="/items">Товары</router-link></li>
-          <li v-if="isAuthenticated && user"><router-link to="/orders">Заказы</router-link></li>
-        </ul>
+  <Menubar :model="menu">
+    <template #start>
+      <span>
+        <img src="@/assets/logo.png" width="50" alt="logo" />
+      </span>
+    </template>
+    <template #item="{ item, props, hasSubmenu, root }">
+      <a class="flex items-center m-2 p-4">
+        <router-link v-if="item.route" :to="item.route">
+          <span :class="item.icon"/>
+          <span class="ml-1">{{ item.label }}</span>
+        </router-link>
+      </a>
+    </template>
+    <template #end>
+        <nav>
+          <div v-if="isAuthenticated && user" class="login">
+            {{ user.name }}
+            <button @click="logout" type="button">Выйти</button>
+          </div>
+          <div v-else class="login">
+            <form @submit.prevent="login">
+              <div class="form-group">
+                <label for="phone">Телефон:</label>
+                <InputText v-model="phone" type="tel" id="phone" required placeholder="Телефон" class="m-2 sm:w-auto" :class="{'p-invalid': authError}"/>
+              </div>
+              <div class="form-group">
+                <label for="password">Пароль:</label>
+                <InputText v-model="password" type="password" placeholder="Пароль" id="password" required class="m-2 sm:w-auto" :class="{'p-invalid': authError}"/>
+              </div>
+              <Button type="submit">Войти</Button>
+              <p v-if="authError" class="error">{{ authError }}</p>
+            </form>
+          </div>
+        </nav>
+    </template>
+  </Menubar>
 
-        <div v-if="isAuthenticated && user" class="login">
-          {{ user.name }}
-          <button @click="logout" type="button">Выйти</button>
-        </div>
-        <div v-else class="login">
-          <form @submit.prevent="login">
-            <div class="form-group">
-              <label for="phone">Телефон:</label>
-              <input v-model="phone" type="tel" id="phone" required />
-            </div>
-            <div class="form-group">
-              <label for="password">Пароль:</label>
-              <input v-model="password" type="password" placeholder="Пароль" id="password" required />
-            </div>
-            <button type="submit">Войти</button>
-            <p v-if="authError" class="error">{{ authError }}</p>
-          </form>
-        </div>
-      </nav>
-    </header>
-
-    <main class="content">
-      <router-view></router-view>
-    </main>
-  </div>
+  <main class="content">
+    <router-view></router-view>
+  </main>
 </template>
 
 <script>
 import { useAuthStore } from '@/stores/authStore';
+import Button from 'primevue/button';
+import Menubar from 'primevue/menubar';
+import InputText from 'primevue/inputtext';
 
 export default {
+  components: {Button, Menubar, InputText},
   data() {
     return {
       phone: '',
       password: '',
       authStore: useAuthStore(),
+      items:[
+        {
+          label: 'Главная страница',
+          icon: 'pi pi-fw pi-home',
+          route: '/',
+          submenu: [],
+        },
+        {
+          label: 'Категории',
+          icon: 'pi pi-fw pi-list',
+          route: '/categories',
+        },
+        {
+          label: 'Товары',
+          icon: 'pi pi-fw pi-shopping-cart',
+          route: '/items',
+        },
+      ]
     };
   },
   computed: {
@@ -59,6 +87,21 @@ export default {
     authError() {
       return this.authStore.errorMessage;
     },
+    menu(){
+      const items = [...this.items];
+      if(this.isAuthenticated && !this.items.find(item => item.label === 'Заказы')) {
+        this.items.push(
+        {
+          label: 'Заказы',
+          icon: 'pi pi-fw pi-file-edit',
+          route: '/orders',
+        })
+      }
+      else if(this.items.find(item => item.label === 'Заказы')){
+        this.items.pop();
+      }
+      return items;
+    }
   },
   methods: {
     login() {
@@ -79,20 +122,15 @@ export default {
 </script>
 
 <style scoped>
-.app-layout {
-  font-family: sans-serif;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
+.content{
+  margin: 20px;
 }
 
 nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 20px;
-  margin-bottom: 20px;
+  padding: 10px 20px;
   flex-wrap: wrap;
   gap: 20px;
 }
@@ -144,9 +182,7 @@ button {
 
 .error {
   color: red;
-  margin: 5px 0 0 0;
   font-size: 13px;
-  width: 100%;
 }
 
 .content {
