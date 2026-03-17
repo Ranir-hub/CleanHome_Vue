@@ -19,6 +19,20 @@
     <Column field="name" header="Наименование товара"/>
     <Column field="category.name" header="Категория"/>
     <Column field="price" header="Цена"/>
+    <Column>
+      <template #body="slotProps">
+        <img
+          :src="slotProps.data.picture_url"
+          alt="pic"
+          width="20"
+        />
+      </template>
+    </Column>
+    <template #footer>
+      <div v-if="user?.is_admin" class ="text-end">
+        <Button type="button" @click="this.$router.push('/createItem')" icon="pi pi-plus" label="Добавить товар"/>
+      </div>
+    </template>
   </DataTable>
 </template>
 
@@ -26,11 +40,15 @@
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import {useDataStore} from "@/stores/dataStore";
+import Button from "primevue/button";
+import { useAuthStore } from '@/stores/authStore';
+
 export default {
   name: "Items",
-  components: {DataTable, Column},
+  components: {DataTable, Column, Button, Image},
   data(){
     return{
+      authStore: useAuthStore(),
       dataStore:useDataStore(),
       perpage: 5,
       offset: 0,
@@ -42,7 +60,10 @@ export default {
     },
     items_total(){
       return this.dataStore.totals.items_total;
-    }
+    },
+    user() {
+      return this.authStore.user;
+    },
   },
   mounted(){
     console.log('Items mounted');
@@ -61,8 +82,5 @@ export default {
 </script>
 
 <style scoped>
-.items {
-  padding: 20px;
-}
 </style>
 

@@ -4,7 +4,7 @@
   <Menubar :model="menu">
     <template #start>
       <span>
-        <img src="@/assets/logo.png" width="50" alt="logo" />
+        <img src="@/assets/logo.png" width="50" alt="logo"/>
       </span>
     </template>
     <template #item="{ item }">

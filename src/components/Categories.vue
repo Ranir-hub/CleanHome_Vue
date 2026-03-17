@@ -17,19 +17,28 @@
     >
       <Column field="id" header="№"/>
       <Column field="name" header="Наименование категории"/>
+    <template #footer>
+      <div v-if="user?.is_admin" class ="text-end">
+        <Button type="button" @click="this.$router.push('/createCategory')" icon="pi pi-plus" label="Добавить категорию"/>
+      </div>
+    </template>
   </DataTable>
 </template>
 
 <script>
 import DataTable from "primevue/datatable";
+import Button from "primevue/button";
 import Column from "primevue/column";
 import {useDataStore} from "@/stores/dataStore";
+import { useAuthStore } from '@/stores/authStore';
+
 export default {
   name: "Categories",
-  components: {DataTable, Column},
+  components: {DataTable, Column, Button},
   data(){
     return{
       dataStore:useDataStore(),
+      authStore: useAuthStore(),
       perpage: 5,
       offset: 0,
     }
@@ -40,7 +49,10 @@ export default {
     },
     categories_total(){
       return this.dataStore.totals.categories_total;
-    }
+    },
+    user() {
+      return this.authStore.user;
+    },
   },
   mounted(){
     console.log('Categories mounted');
@@ -59,8 +71,5 @@ export default {
 </script>
 
 <style scoped>
-.categories {
-  padding: 20px;
-}
 </style>
 
