@@ -79,6 +79,7 @@
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import { useDataStore } from '@/stores/dataStore';
+import { useAuthStore } from '@/stores/authStore';
 import Toast from 'primevue/toast';
 import Select from 'primevue/select';
 import categories from "@/components/Categories.vue";
@@ -90,6 +91,7 @@ export default {
   data() {
     return {
       dataStore: useDataStore(),
+      authStore: useAuthStore(),
       itemName: '',
       itemCategory: 0,
       itemPrice: 0,
@@ -135,8 +137,8 @@ export default {
       formData.append('price', this.itemPrice);
       formData.append('category_id', this.itemCategory);
       formData.append('balance', this.itemBalance);
-        formData.append('image', this.itemImage);
-        this.dataStore.errorCode = 0;
+      formData.append('image', this.itemImage);
+      this.dataStore.errorCode = 0;
       await this.dataStore.create(formData, '/api/item');
 
       if (this.dataStore.errorCode > 0) {

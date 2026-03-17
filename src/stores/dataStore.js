@@ -14,11 +14,13 @@ export const useDataStore = defineStore('data', {
       items_total: null,
       orders_total: null,
     },
-    token: localStorage.getItem('token') || null,
     errorMessage: "",
     errorCode: 0,
     loading: false,
   }),
+  getters: {
+    token: () => localStorage.getItem('token') || null,
+  },
   actions: {
     async get(key, endpoint, page = 0, perpage = 5) {
       this.errorMessage = "";

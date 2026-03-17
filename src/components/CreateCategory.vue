@@ -25,6 +25,7 @@
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import { useDataStore } from '@/stores/dataStore';
+import { useAuthStore } from '@/stores/authStore';
 import Toast from 'primevue/toast';
 
 export default {
@@ -34,6 +35,7 @@ export default {
   data() {
     return {
       dataStore: useDataStore(),
+      authStore: useAuthStore(),
       categoryName: '',
       categoryImage: null,
     }
@@ -45,7 +47,7 @@ export default {
     },
     errorCode() {
       return this.dataStore.errorCode;
-    }
+    },
   },
 
   methods: {
