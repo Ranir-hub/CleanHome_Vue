@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
+import { useAuthStore } from '@/stores/authStore';
 
 export const useDataStore = defineStore('data', {
   state: () => ({
@@ -18,9 +19,6 @@ export const useDataStore = defineStore('data', {
     errorCode: 0,
     loading: false,
   }),
-  getters: {
-    token: () => localStorage.getItem('token') || null,
-  },
   actions: {
     async get(key, endpoint, page = 0, perpage = 5) {
       this.errorMessage = "";
@@ -64,13 +62,14 @@ export const useDataStore = defineStore('data', {
     },
     async get_auth(key, endpoint, page = 0, perpage = 5) {
       this.errorMessage = "";
+      const authStore = useAuthStore();
       try {
         const response = await axios.get(backendUrl + endpoint, {
           params: {
             page: page,
             perpage: perpage,
           },
-          headers: {Authorization: `Bearer ` + this.token}
+          headers: {Authorization: 'Bearer ' + authStore.token}
         });
         this.data[key] = response.data;
       } catch (error) {
@@ -87,9 +86,10 @@ export const useDataStore = defineStore('data', {
     },
     async get_total_auth(key, endpoint) {
       this.errorMessage = "";
+      const authStore = useAuthStore();
       try {
         const response = await axios.get(backendUrl + endpoint, {
-          headers: {Authorization: `Bearer ` + this.token}
+          headers: {Authorization: 'Bearer ' + authStore.token}
         });
         this.totals[key] = response.data;
         console.log(this.totals[key]);
@@ -106,12 +106,14 @@ export const useDataStore = defineStore('data', {
       }
     },
     async create(formData, endpoint) {
+      this.errorCode = 0;
       this.errorMessage = "";
+      const authStore = useAuthStore();
       try {
         const response = await axios.post(backendUrl + endpoint, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
-             Authorization: `Bearer ` + this.token
+             Authorization: 'Bearer ' + authStore.token
           },
         });
       } catch (error) {
